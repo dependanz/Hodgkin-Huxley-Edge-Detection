@@ -1,7 +1,9 @@
 clear;
 close all;
 tic;
-dilation_rate = 0;
+x_dilation_rate = 2;
+y_dilation_rate = 1;
+
 config = "proj6-filters";
 mkdir(strcat("filter_pictures/",config));
 mkdir(strcat("filter_pictures/",config,"/ex"));
@@ -55,14 +57,14 @@ tau_n=@(v) 1+6./(1+exp((v+53)/16));
 
 theta_i = 0;
 normal = [-double(cos(d2r(theta_i))),double(sin(d2r(theta_i)))];
-sig_x = 8;
-sig_y = 8;
+sig_x = 5;
+sig_y = 5;
 
 Tmax = 1000;
 dt = 0.05;
 t = 0:dt:Tmax;
 
-f = 1/(pi/0.9);
+f = 1/(pi/2);
 V = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 V(:,:,1) = 10.613;
 
@@ -100,11 +102,11 @@ for theta_i=1:359
                 g_in_sum = 0.0;
 
                 % PER NEURON WINDOW
-                for x=(x_c_i - R):(x_c_i + R)
+                for x=(x_c_i - R*x_dilation_rate):x_dilation_rate:(x_c_i + R*x_dilation_rate)
                     if(x <= 0 || x > int16(size(B,1)))
                         continue
                     end
-                    for y=(y_c_i - R):(y_c_i + R)
+                    for y=(y_c_i - R*y_dilation_rate):y_dilation_rate:(y_c_i + R*y_dilation_rate)
                         if(y <= 0 || y > int16(size(B,1)))
                             continue
                         end
