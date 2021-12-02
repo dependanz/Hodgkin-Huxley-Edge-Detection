@@ -7,13 +7,13 @@ A = imread("Project/Lenna128.png");
 % grayscales
 % B = (0.3 * A(:,:,1) + 0.4 * A(:,:,2) + 0.1 * A(:,:,3));
 B = (0.2126 * A(:,:,1) + 0.7152 * A(:,:,2) + 0.0722 * A(:,:,3));
-imshow(B);
-D = zeros(int16(size(B,1)),int16(size(B,2)));
+% imshow(B);
+% D = zeros(int16(size(B,1)),int16(size(B,2)));
 
 % Initial Values / Constants
 C = 1;
-E_L = 10.613;
-E_K = -12;
+E_L = -52;
+E_K = -75;
 E_Na = 115;
 G_L = 0.3;
 G_K = 36;
@@ -29,24 +29,30 @@ A_ex = 0.028953;
 A_in = 0.014103;
 tau_ref = 10;
 
+% before
+% C = 1;
+% E_L = 10.613;
+% E_K = -12;
+% E_Na = 115;
+% G_L = 0.3;
+% G_K = 36;
+% G_Na = 120;
+% 
+% V_th = -65;
+% V_reset = -70;
+% E_ex = 0;
+% E_in = -75;
+% tau_ex = 3;
+% tau_in = 10;
+% A_ex = 0.028953;
+% A_in = 0.014103;
+% tau_ref = 10;
+
 % I = @(x,y) B(x + int16(size(B,2)/2) + 1,int16(size(B,1)) - (y + int16(size(B,1)/2) - 1));
 I = @(x,y) B(x,y);
 d2r = @(d) d * (pi / 180);
 
-alpha_n=@(v) (0.01 * (10.0 + v))/(exp((10.0+v)/10.0) - 1.0);
-alpha_m=@(v) (0.1 * (25.0 + v))/(exp((25.0+v)/10.0) - 1.0);
-alpha_h=@(v) 0.07 * (exp(v/20.0));
-beta_n=@(v) 0.125 * exp(v/80.0);
-beta_m=@(v) 4.0 * exp(v/18.0);
-beta_h=@(v) 1.0 / (exp((30.0 + v) / 10.0) + 1.0);
-
-m_inf = @(v) alpha_m(v) / (alpha_m(v) + beta_m(v));
-h_inf = @(v) alpha_h(v) / (alpha_h(v) + beta_h(v));
-n_inf = @(v) alpha_n(v) / (alpha_n(v) + beta_n(v));
-tau_m = @(v) 1.0 / (alpha_m(v) + beta_m(v));
-tau_h = @(v) 1.0 / (alpha_h(v) + beta_h(v));
-tau_n = @(v) 1.0 / (alpha_n(v) + beta_n(v));
-
+% before
 % m_inf=@(v) 1./(1+exp(-(v+40)/9));
 % h_inf=@(v) 1./(1+exp((v+62)/10));
 % n_inf=@(v) 1./(1+exp(-(v+53)/16));
@@ -54,18 +60,33 @@ tau_n = @(v) 1.0 / (alpha_n(v) + beta_n(v));
 % tau_h=@(v) 1+11./(1+exp((v+62)/10));
 % tau_n=@(v) 1+6./(1+exp((v+53)/16));
 
-theta_i = 60;
+% before 2
+m_inf=@(v) 1./(1+exp(-(v+40)/9));
+h_inf=@(v) 1./(1+exp((v+62)/15));
+n_inf=@(v) 1./(1+exp(-(v+20)/30));
+tau_m=@(v) 0.3 + 0.0*v;
+tau_h=@(v) 1+11./(1+exp((v+62)/10));
+tau_n=@(v) 1+6./(1+exp((v+53)/16));
+
+% m_inf=@(v) 1./(1+exp(-(v+40)/9));
+% h_inf=@(v) 1./(1+exp((v+62)/15));
+% n_inf=@(v) 1./(1+exp(-(v+20)/30));
+% tau_m=@(v) 0.3 + 0.0*v;
+% tau_h=@(v) 1+11./(1+exp((v+62)/10));
+% tau_n=@(v) 1+6./(1+exp((v+20)/30));
+
+theta_i = 240;
 normal = [-double(cos(d2r(theta_i))),double(sin(d2r(theta_i)))];
-sig_x = 3;
-sig_y = 3;
+sig_x = 8;
+sig_y = 8;
 
 Tmax = 1000;
 dt = 0.05;
 t = 0:dt:Tmax;
 
-f = 10/(pi/4);
+f = 1/(pi/0.9);
 V = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
-V(:,:,1) = 10.613;
+V(:,:,1) = E_L;
 
 n = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 n(:,:,1) = 0.1765;
@@ -74,26 +95,19 @@ m(:,:,1) = 0.0529;
 h = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 h(:,:,1) = 0.5961;
 
+% W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
+% W_in = zeros(int16(size(B,1)),int16(size(B,2)));
 g_ex = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 g_in = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 
-R = 5;
-% for theta_i=1:60:360
-% for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
-%     for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
+R = 3;
 
-% for x_c_i=64:64
-%     for y_c_i=64:64
-
-% for j=1:(length(t)-1)
-for j=1:5000
+for j=1:100
     % PER NEURON
 %    for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
 %        for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
     for y_c_i=1:(int16(size(B,2)))
         for x_c_i=1:(int16(size(B,1)))
-            W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
-            W_in = zeros(int16(size(B,1)),int16(size(B,2)));
 
             g_ex_sum = 0.0;
             g_in_sum = 0.0;
@@ -112,43 +126,43 @@ for j=1:5000
                     y_theta_i = (y-y_c_i) * cos(d2r(theta_i)) - (x-x_c_i) * sin(d2r(theta_i));
 
                     v = [double(x_theta_i),double(x_theta_i)];
-                    
+
                     % theta_i \in (45,225]
                         if(theta_i > 45 && theta_i <= 225)
                             if(dot(v,normal) <= 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
+                                W_ex = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_ex_sum = g_ex_sum + W_ex * double(B(x,y)/255.0);
                             else
-                                W_ex(x,y) = 0;
+                                W_ex = 0;
                             end
 
-                            if(dot(v,normal) > 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
+                            if(dot(v,normal) >= 0)
+                                W_in = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_in_sum = g_in_sum + W_in * double(B(x,y)/255.0);
                             else
-                                W_in(x,y) = 0;
+                                W_in = 0;
                             end
                         else
-                            if(dot(v,normal) > 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
+                            if(dot(v,normal) >= 0)
+                                W_ex = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_ex_sum = g_ex_sum + W_ex * double(B(x,y)/255.0);
                             else
-                                W_ex(x,y) = 0;
+                                W_ex = 0;
                             end
 
                             if(dot(v,normal) <= 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
+                                W_in = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_in_sum = g_in_sum + W_in * double(B(x,y)/255.0);
                             else
-                                W_in(x,y) = 0;
+                                W_in = 0;
                             end
                         end
 
-                    D(x_c_i,y_c_i) = D(x_c_i,y_c_i) + W_ex(x,y) * (B(x,y)/255.0);
+%                     D(x_c_i,y_c_i) = D(x_c_i,y_c_i) + W_ex * (B(x,y)/255.0);
                 end
             end
 
-            % COMPUTE PER NEURON POTENTIAL
+            % COMPUTE PER NEURON POTENTIAL (AELIF
             I_ex = g_ex(x_c_i, y_c_i,j) * (V(x_c_i, y_c_i,j) - E_ex);
             I_in = g_in(x_c_i, y_c_i,j) * (V(x_c_i, y_c_i,j) - E_in);
             I_K = G_K * (n(x_c_i, y_c_i, j)^4) * (V(x_c_i, y_c_i,j) - E_K);
@@ -192,14 +206,14 @@ for j=1:5000
         end
     end
 end
-figure
-subplot(1,2,1);
-imshow(W_in)
-title("Inhibitory Synapse Weight");
-subplot(1,2,2);
-imshow(W_ex)
-title("Exhibitory Synapse Weight");
-figure
-imshow(D)
+% figure
+% subplot(1,2,1);
+% imshow(W_in)
+% title("Inhibitory Synapse Weight");
+% subplot(1,2,2);
+% imshow(W_ex)
+% title("Exhibitory Synapse Weight");
+% figure
+% imshow(D)
 toc;
-% end
+

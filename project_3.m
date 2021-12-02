@@ -68,26 +68,19 @@ m(:,:,1) = 0.0529;
 h = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 h(:,:,1) = 0.5961;
 
+W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
+W_in = zeros(int16(size(B,1)),int16(size(B,2)));
 g_ex = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 g_in = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 
 R = 4;
-% for theta_i=1:60:360
-% for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
-%     for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
 
-% for x_c_i=64:64
-%     for y_c_i=64:64
-
-% for j=1:(length(t)-1)
 for j=1:1000
     % PER NEURON
 %    for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
 %        for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
     for y_c_i=1:(int16(size(B,2)))
         for x_c_i=1:(int16(size(B,1)))
-            W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
-            W_in = zeros(int16(size(B,1)),int16(size(B,2)));
 
             g_ex_sum = 0.0;
             g_in_sum = 0.0;
@@ -142,35 +135,24 @@ for j=1:1000
                 end
             end
 
-            % COMPUTE PER NEURON POTENTIAL
+            % COMPUTE PER NEURON POTENTIAL (AELIF
             I_ex = g_ex(x_c_i, y_c_i,j) * (V(x_c_i, y_c_i,j) - E_ex);
             I_in = g_in(x_c_i, y_c_i,j) * (V(x_c_i, y_c_i,j) - E_in);
-            I_K = G_K * (n(x_c_i, y_c_i, j)^4) * (V(x_c_i, y_c_i,j) - E_K);
-            I_Na = G_Na * (m(x_c_i, y_c_i, j)^3) * h(x_c_i, y_c_i, j) * (V(x_c_i, y_c_i,j) - E_Na);
+%             I_K = G_K * (n(x_c_i, y_c_i, j)^4) * (V(x_c_i, y_c_i,j) - E_K);
+%             I_Na = G_Na * (m(x_c_i, y_c_i, j)^3) * h(x_c_i, y_c_i, j) * (V(x_c_i, y_c_i,j) - E_Na);
             
-            k1V = (1.0/C) * (I_ex + I_in - I_K - I_Na - G_L * (V(x_c_i, y_c_i,j) - E_L));
-            k1n = (n_inf(V(x_c_i, y_c_i,j)) - n(j))/tau_n(V(x_c_i, y_c_i,j));
-            k1m = (m_inf(V(x_c_i, y_c_i,j)) - m(j))/tau_m(V(x_c_i, y_c_i,j));
-            k1h = (h_inf(V(x_c_i, y_c_i,j)) - h(j))/tau_h(V(x_c_i, y_c_i,j));
+            k1V = (1.0/C) * (I_ex + I_in - G_L * (V(x_c_i, y_c_i,j) - E_L));
             k1g_ex = -(1.0 / tau_ex) * g_ex(x_c_i, y_c_i,j) + g_ex_sum;
             k1g_in = -(1.0 / tau_in) * g_in(x_c_i, y_c_i,j) + g_in_sum;
             
             a2V1 = (V(x_c_i, y_c_i,j) + k1V * dt);
-            a2n = (n(x_c_i, y_c_i, j) + k1n * dt);
-            a2m = (m(x_c_i, y_c_i, j) + k1m * dt);
-            a2h = (h(x_c_i, y_c_i, j) + k1h * dt);
             a2g_ex = (g_ex(x_c_i, y_c_i, j) + k1g_ex * dt);
             a2g_in = (g_in(x_c_i, y_c_i, j) + k1g_in * dt);
             
             I_ex_2 = a2g_ex * (a2V1 - E_ex);
             I_in_2 = a2g_in * (a2V1 - E_in);
-            I_K_2 = G_K * (a2n^4) * (a2V1 - E_K);
-            I_Na_2 = G_Na * (a2m^3) * a2h * (a2V1 - E_Na);
             
-            k2V = (1.0/C) * (I_ex + I_in - I_K - I_Na - G_L * (a2V1 - E_L));
-            k2n = (n_inf(a2V1) - a2n)/tau_n(a2V1);
-            k2m = (m_inf(a2V1) - a2m)/tau_m(a2V1);
-            k2h = (h_inf(a2V1) - a2h)/tau_h(a2V1);
+            k2V = (1.0/C) * (I_ex + I_in - G_L * (a2V1 - E_L));
             k2g_ex = -(1.0 / tau_ex) * a2g_ex + g_ex_sum;
             k2g_in = -(1.0 / tau_in) * a2g_in + g_in_sum;
             
@@ -178,9 +160,6 @@ for j=1:1000
             if(V(x_c_i, y_c_i, j+1) > 3e127)
                 V(x_c_i, y_c_i, j+1) = 3e127;
             end
-            n(x_c_i, y_c_i,j+1) = n(x_c_i, y_c_i,j) + (k1n + k2n) * (dt/2.0);
-            m(x_c_i, y_c_i,j+1) = m(x_c_i, y_c_i,j) + (k1m + k2m) * (dt/2.0);
-            h(x_c_i, y_c_i,j+1) = h(x_c_i, y_c_i,j) + (k1h + k2h) * (dt/2.0);
             g_ex(x_c_i, y_c_i,j+1) = g_ex(x_c_i, y_c_i,j) + (k1g_ex + k2g_ex) * (dt/2.0);
             g_in(x_c_i, y_c_i,j+1) = g_in(x_c_i, y_c_i,j) + (k1g_in + k2g_in) * (dt/2.0);
         end
@@ -196,4 +175,4 @@ title("Exhibitory Synapse Weight");
 figure
 imshow(D)
 toc;
-% end
+
