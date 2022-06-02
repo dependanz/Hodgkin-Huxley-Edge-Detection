@@ -2,6 +2,9 @@
 
 Or rather, an attempt to improve upon an existing approach that uses the Hodgkin Huxley Model.
 
+Presentation: https://docs.google.com/presentation/d/1rzdlWtbZPrXQYUjaCyxhHss6HMAZLczwFgKe_lX6jwA/edit?usp=sharing
+TODO: Organize this repo...
+
 ### First Attempt Demo Vid:
 What you'll see in this demo is a first attempt at implementing the hidden layer of a hodgkin huxley inspired model for edge detection using gabor filters for receptive fields.
 
