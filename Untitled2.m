@@ -4,10 +4,10 @@
 % beta_n=@(v) 0.125 * exp(v/80.0);
 % beta_m=@(v) 4.0 * exp(v/18.0);
 % beta_h=@(v) 1.0 ./ (exp((30.0 + v) / 10.0) + 1.0);
-% 
-% m_inf = @(v) alpha_m(v) ./ (alpha_m(v) + beta_m(v));
-% h_inf = @(v) alpha_h(v) ./ (alpha_h(v) + beta_h(v));
-% n_inf = @(v) alpha_n(v) ./ (alpha_n(v) + beta_n(v));
+% % 
+% % m_inf = @(v) alpha_m(v) ./ (alpha_m(v) + beta_m(v));
+% % h_inf = @(v) alpha_h(v) ./ (alpha_h(v) + beta_h(v));
+% % n_inf = @(v) alpha_n(v) ./ (alpha_n(v) + beta_n(v));
 % tau_m = @(v) 1.0 ./ (alpha_m(v) + beta_m(v));
 % tau_h = @(v) 1.0 ./ (alpha_h(v) + beta_h(v));
 % tau_n = @(v) 1.0 ./ (alpha_n(v) + beta_n(v));
@@ -52,12 +52,33 @@ close all;
 % tau_h=@(v) 1+11./(1+exp((v+62)/10));
 % tau_n=@(v) 1+6./(1+exp((v+53)/16));
 
-m_inf=@(v) 1./(1+exp(-(v+40)/9));
-h_inf=@(v) 1./(1+exp((v+62)/15));
-n_inf=@(v) 1./(1+exp(-(v+20)/30));
-tau_m=@(v) 0.3 + 0.0*v;
-tau_h=@(v) 1+11./(1+exp((v+62)/10));
-tau_n=@(v) 1+6./(1+exp((v+20)/30));
+% m_inf=@(v) 1./(1+exp(-(v+40)/9));
+% h_inf=@(v) 1./(1+exp((v+62)/15));
+% n_inf=@(v) 1./(1+exp(-(v+20)/30));
+% tau_m=@(v) 0.3 + 0.0*v;
+% tau_h=@(v) 1+11./(1+exp((v+62)/10));
+% tau_n=@(v) 1+6./(1+exp((v+20)/30));
+
+% m_inf=@(v) 1./(1+exp(-(v+40)/9));
+% h_inf=@(v) 1./(1+exp((v+50)/10));
+% n_inf=@(v) 1./(1+exp(-(v+35)/60));
+% tau_m=@(v) 0.3 + 0.0*v;
+% tau_h=@(v) 1+11./(1+exp((v+50)/10));
+% tau_n=@(v) 1+6./(1+exp((v+53)/24));
+
+alpha_n=@(v) (0.01 * (10.0 + v))/(exp((10.0+v)/10.0) - 1.0);
+alpha_m=@(v) (0.1 * (25.0 + v))/(exp((25.0+v)/10.0) - 1.0);
+alpha_h=@(v) 0.07 * (exp(v/20.0));
+beta_n=@(v) 0.125 * exp(v/80.0);
+beta_m=@(v) 4.0 * exp(v/18.0);
+beta_h=@(v) 1.0 ./ (exp((30.0 + v) / 10.0) + 1.0);
+
+m_inf = @(v) alpha_m(v) ./ (alpha_m(v) + beta_m(v));
+h_inf = @(v) alpha_h(v) ./ (alpha_h(v) + beta_h(v));
+n_inf = @(v) alpha_n(v) ./ (alpha_n(v) + beta_n(v));
+tau_m = @(v) 1.0 ./ (alpha_m(v) + beta_m(v));
+tau_h = @(v) 1.0 ./ (alpha_h(v) + beta_h(v));
+tau_n = @(v) 1.0 ./ (alpha_n(v) + beta_n(v));
 
 vv=-200:0.1:200;
 

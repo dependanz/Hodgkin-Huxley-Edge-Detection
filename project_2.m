@@ -86,7 +86,7 @@ R = 5;
 %     for y_c_i=64:64
 
 % for j=1:(length(t)-1)
-for j=1:5000
+for j=1:500
     % PER NEURON
 %    for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
 %        for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2

@@ -29,8 +29,11 @@ A_ex = 0.028953;
 A_in = 0.014103;
 tau_ref = 10;
 
+I_app = 0.2;
+alpha = 1;
+
 % I = @(x,y) B(x + int16(size(B,2)/2) + 1,int16(size(B,1)) - (y + int16(size(B,1)/2) - 1));
-I = @(x,y) B(x,y);
+I = @(x,y,a,i_app) a*(double(B(x,y))/255.0) + i_app;
 d2r = @(d) d * (pi / 180);
 
 m_inf=@(v) 1./(1+exp(-(v+40)/9));
@@ -40,7 +43,7 @@ tau_m=@(v) 0.3 + 0.0*v;
 tau_h=@(v) 1+11./(1+exp((v+62)/10));
 tau_n=@(v) 1+6./(1+exp((v+53)/16));
 
-theta_i = 330;
+theta_i = 240;
 normal = [-double(cos(d2r(theta_i))),double(sin(d2r(theta_i)))];
 sig_x = 4;
 sig_y = 4;
@@ -63,10 +66,10 @@ h(:,:,1) = 0.5961;
 g_ex = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 g_in = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 
-W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
-W_in = zeros(int16(size(B,1)),int16(size(B,2)));
+% W_ex = zeros(int16(size(B,1)),int16(size(B,2)));
+% W_in = zeros(int16(size(B,1)),int16(size(B,2)));
 
-R = 5;
+R = 4;
 % for theta_i=1:60:360
 % for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
 %     for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
@@ -101,35 +104,35 @@ for j=1:1000
                     % theta_i \in (45,225]
                         if(theta_i > 45 && theta_i <= 225)
                             if(dot(v,normal) <= 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
+                                W_ex = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_ex_sum = g_ex_sum + W_ex * double(I(x,y,alpha,I_app));
                             else
-                                W_ex(x,y) = 0;
+                                W_ex = 0;
                             end
 
-                            if(dot(v,normal) > 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
+                            if(dot(v,normal) >= 0)
+                                W_in = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_in_sum = g_in_sum + W_in * double(I(x,y,alpha,I_app));
                             else
-                                W_in(x,y) = 0;
+                                W_in = 0;
                             end
                         else
-                            if(dot(v,normal) > 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
+                            if(dot(v,normal) >= 0)
+                                W_ex = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_ex_sum = g_ex_sum + W_ex * double(I(x,y,alpha,I_app));
                             else
-                                W_ex(x,y) = 0;
+                                W_ex = 0;
                             end
 
                             if(dot(v,normal) <= 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
-                                g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
+                                W_in = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                g_in_sum = g_in_sum + W_in * double(I(x,y,alpha,I_app));
                             else
-                                W_in(x,y) = 0;
+                                W_in = 0;
                             end
                         end
 
-                    D(x_c_i,y_c_i) = D(x_c_i,y_c_i) + W_ex(x,y) * (B(x,y)/255.0);
+                    % D(x_c_i,y_c_i) = D(x_c_i,y_c_i) + W_ex(x,y) * (B(x,y)/255.0);
                 end
             end
 
@@ -140,9 +143,9 @@ for j=1:1000
             I_Na = G_Na * (m(x_c_i, y_c_i, j)^3) * h(x_c_i, y_c_i, j) * (V(x_c_i, y_c_i,j) - E_Na);
             
             k1V = (1.0/C) * (I_ex + I_in - I_K - I_Na - G_L * (V(x_c_i, y_c_i,j) - E_L));
-            k1n = (n_inf(V(x_c_i, y_c_i,j)) - n(j))/tau_n(V(x_c_i, y_c_i,j));
-            k1m = (m_inf(V(x_c_i, y_c_i,j)) - m(j))/tau_m(V(x_c_i, y_c_i,j));
-            k1h = (h_inf(V(x_c_i, y_c_i,j)) - h(j))/tau_h(V(x_c_i, y_c_i,j));
+            k1n = (n_inf(V(x_c_i, y_c_i,j)) - n(x_c_i, y_c_i, j))/tau_n(V(x_c_i, y_c_i,j));
+            k1m = (m_inf(V(x_c_i, y_c_i,j)) - m(x_c_i, y_c_i, j))/tau_m(V(x_c_i, y_c_i,j));
+            k1h = (h_inf(V(x_c_i, y_c_i,j)) - h(x_c_i, y_c_i, j))/tau_h(V(x_c_i, y_c_i,j));
             k1g_ex = -(1.0 / tau_ex) * g_ex(x_c_i, y_c_i,j) + g_ex_sum;
             k1g_in = -(1.0 / tau_in) * g_in(x_c_i, y_c_i,j) + g_in_sum;
             

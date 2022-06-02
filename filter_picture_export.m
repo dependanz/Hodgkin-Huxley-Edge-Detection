@@ -1,10 +1,10 @@
 clear;
 close all;
 tic;
-x_dilation_rate = 2;
+x_dilation_rate = 1;
 y_dilation_rate = 1;
 
-config = "proj6-filters";
+config = "config19";
 mkdir(strcat("filter_pictures/",config));
 mkdir(strcat("filter_pictures/",config,"/ex"));
 mkdir(strcat("filter_pictures/",config,"/in"));
@@ -57,14 +57,15 @@ tau_n=@(v) 1+6./(1+exp((v+53)/16));
 
 theta_i = 0;
 normal = [-double(cos(d2r(theta_i))),double(sin(d2r(theta_i)))];
-sig_x = 5;
-sig_y = 5;
+sig_x = 10;
+sig_y = 10;
 
 Tmax = 1000;
 dt = 0.05;
 t = 0:dt:Tmax;
 
-f = 1/(pi/2);
+% f = 1/(pi/1);
+f = 1/(2*pi);
 V = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 V(:,:,1) = 10.613;
 
@@ -78,7 +79,8 @@ h(:,:,1) = 0.5961;
 g_ex = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 g_in = zeros(int16(size(B,1)),int16(size(B,2)),length(t));
 
-R = 3;
+R = 50;
+lambda = 1;
 % for theta_i=1:60:360
 % for y_c_i=(int16(size(B,2)))/2:(int16(size(B,2)))/2
 %     for x_c_i=(int16(size(B,1)))/2:(int16(size(B,1)))/2
@@ -119,28 +121,28 @@ for theta_i=1:359
                         % theta_i \in (45,225]
                         if(theta_i > 45 && theta_i <= 225)
                             if(dot(v,normal) <= 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i/lambda));
                                 g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
                             else
                                 W_ex(x,y) = 0;
                             end
 
                             if(dot(v,normal) >= 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i/lambda));
                                 g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
                             else
                                 W_in(x,y) = 0;
                             end
                         else
                             if(dot(v,normal) >= 0)
-                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                W_ex(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i/lambda));
                                 g_ex_sum = g_ex_sum + W_ex(x,y) * double(B(x,y)/255.0);
                             else
                                 W_ex(x,y) = 0;
                             end
 
                             if(dot(v,normal) <= 0)
-                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i));
+                                W_in(x,y) = exp(-0.5 * (double((x_theta_i^2)/(sig_x^2)) + double((y_theta_i^2)/(sig_y^2)))) * cos(double(2*pi*f*x_theta_i/lambda));
                                 g_in_sum = g_in_sum + W_in(x,y) * double(B(x,y)/255.0);
                             else
                                 W_in(x,y) = 0;
